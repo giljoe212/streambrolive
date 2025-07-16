@@ -1,0 +1,67 @@
+# Dependencies
+/node_modules
+/server/uploads/
+
+# Build output
+/dist
+
+# Vite build output
+/dist-ssr
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database files
+/db/database.db
+/db/database.db-shm
+/db/database.db-wal
+
+# Local Database
+/streamcraft.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.env
