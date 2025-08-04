@@ -353,4 +353,4 @@ const StreamList = () => {
   );
 };
 
-export default StreamList;
+export { StreamList };
