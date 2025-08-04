@@ -1,23 +1,39 @@
 // src/apiConfig.ts
 
-// In development, the app defaults to a local server.
-// In production, the VITE_API_URL environment variable *must* be set during the build process.
+// In development, the app will use the local server on port 3001
+// In production, it will use the VITE_API_URL environment variable or default to the same domain
 const getApiBaseUrl = () => {
-  const baseUrl = import.meta.env.PROD 
-    ? (import.meta.env.VITE_API_URL || 'https://streambrolive-production.up.railway.app')
-    : 'http://localhost:3001';
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001';
+  }
   
-  // Pastikan URL tidak diakhiri dengan /
+  // In production, use VITE_API_URL if set, otherwise use current domain
+  const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+  
+  // Remove trailing slash if present
   return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
-// Log URL yang digunakan
-if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
-  console.warn('WARNING: The VITE_API_URL environment variable is not set. Using default production URL.');
-}
+// Log the URL being used
 console.log(`API Base URL: ${API_BASE_URL}`);
 
-export { API_BASE_URL as API_URL };
-export { API_BASE_URL };
+// Export the base URL
+export { API_BASE_URL, API_BASE_URL as API_URL };
+
+export const API_ENDPOINTS = {
+  AUTH: {
+    REGISTER: '/api/auth/register',
+    LOGIN: '/api/auth/login',
+    LOGOUT: '/api/auth/logout',
+    ME: '/api/auth/me'
+  },
+  STREAMS: {
+    LIST: '/api/streams',
+    CREATE: '/api/streams',
+    DETAIL: (id: string) => `/api/streams/${id}`,
+    UPDATE: (id: string) => `/api/streams/${id}`,
+    DELETE: (id: string) => `/api/streams/${id}`
+  }
+};
