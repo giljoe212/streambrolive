@@ -2,13 +2,22 @@
 
 // In development, the app defaults to a local server.
 // In production, the VITE_API_URL environment variable *must* be set during the build process.
-const API_URL = import.meta.env.PROD 
-  ? import.meta.env.VITE_API_URL 
-  : 'http://localhost:3001';
+const getApiBaseUrl = () => {
+  const baseUrl = import.meta.env.PROD 
+    ? (import.meta.env.VITE_API_URL || 'https://streambrolive-production.up.railway.app')
+    : 'http://localhost:3001';
+  
+  // Pastikan URL tidak diakhiri dengan /
+  return baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+};
 
-if (import.meta.env.PROD && !API_URL) {
-  console.error('FATAL ERROR: The VITE_API_URL environment variable is not set in the production environment.');
-  // This will help you diagnose configuration issues in your deployment environment.
+const API_BASE_URL = getApiBaseUrl();
+
+// Log URL yang digunakan
+if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+  console.warn('WARNING: The VITE_API_URL environment variable is not set. Using default production URL.');
 }
+console.log(`API Base URL: ${API_BASE_URL}`);
 
-export { API_URL };
+export { API_BASE_URL as API_URL };
+export { API_BASE_URL };

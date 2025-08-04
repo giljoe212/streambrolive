@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
-import { API_URL } from '../apiConfig';
+import { API_BASE_URL } from '../apiConfig';
 import { User } from '../types';
 
 interface PasswordChangePayload {
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const updateUserSettings = async (settings: SettingsPayload) => {
     if (!user) throw new Error("User not authenticated");
     try {
-      const response = await axios.put<ApiResponse<User>>(`${API_URL}/api/auth/settings/${user.id}`, { settings });
+      const response = await axios.put<ApiResponse<User>>(`${API_BASE_URL}/api/auth/settings/${user.id}`, { settings });
       if (response.data.success) {
         setUser(response.data.data); // Update user state with the latest data from server
       } else {
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const changePassword = async (payload: PasswordChangePayload): Promise<boolean> => {
     if (!user) throw new Error("User not authenticated");
     try {
-      const response = await axios.put<ApiResponse<{}>>(`${API_URL}/api/auth/change-password/${user.id}`, payload);
+      const response = await axios.put<ApiResponse<{}>>(`${API_BASE_URL}/api/auth/change-password/${user.id}`, payload);
       if (response.data.success) {
         return true;
       }
@@ -89,7 +89,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post<ApiResponse<User>>(`${API_URL}/api/auth/login`, { username, password });
+      console.log('Attempting to login to:', `${API_BASE_URL}/api/auth/login`);
+      const response = await axios.post<ApiResponse<User>>(`${API_BASE_URL}/api/auth/login`, { username, password });
       
       if (response.data && response.data.success) {
         const loggedInUser = response.data.data;
@@ -120,7 +121,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const register = async (username: string, email: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post<ApiResponse<{}>>(`${API_URL}/api/auth/register`, { username, email, password });
+      console.log('Attempting to register at:', `${API_BASE_URL}/api/auth/register`);
+      const response = await axios.post<ApiResponse<{}>>(`${API_BASE_URL}/api/auth/register`, { username, email, password });
       if (response.data.success) {
         // Automatically log in the user after successful registration
         return await login(username, password);
