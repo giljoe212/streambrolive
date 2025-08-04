@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../apiConfig';
 import EditUserModal from './EditUserModal';
 import AddUserModal from './AddUserModal';
 
@@ -12,6 +13,12 @@ export interface User {
   [key: string]: any; // Untuk menangani properti tambahan
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,11 +29,11 @@ const UserList: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/auth/users');
+      const response = await axios.get<ApiResponse<User[]>>(`${API_URL}/api/auth/users`);
       if (response.data.success) {
         setUsers(response.data.data);
       } else {
-        setError('Gagal memuat data pengguna');
+        setError(response.data.message || 'Gagal memuat data pengguna');
       }
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -42,8 +49,8 @@ const UserList: React.FC = () => {
 
   const handleUpdateUser = async (updatedUser: User) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/auth/users/${updatedUser.id}`,
+      const response = await axios.put<ApiResponse<User>>(
+        `${API_URL}/api/auth/users/${updatedUser.id}`,
         updatedUser
       );
       
@@ -60,7 +67,7 @@ const UserList: React.FC = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const response = await axios.delete(`http://localhost:3001/api/auth/users/${userId}`);
+      const response = await axios.delete<ApiResponse<{}>>(`${API_URL}/api/auth/users/${userId}`);
       
       if (response.data.success) {
         setUsers(users.filter(user => user.id !== userId));
@@ -87,7 +94,7 @@ const UserList: React.FC = () => {
 
   const handleAddUser = async (userData: { username: string; email: string; password: string }): Promise<void> => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/register', {
+      const response = await axios.post<ApiResponse<User>>(`${API_URL}/api/auth/register`, {
         username: userData.username,
         email: userData.email,
         password: userData.password
@@ -97,7 +104,7 @@ const UserList: React.FC = () => {
         // Refresh daftar pengguna setelah berhasil menambahkan
         fetchUsers();
       } else {
-        throw new Error('Gagal menambahkan pengguna');
+        throw new Error(response.data.message || 'Gagal menambahkan pengguna');
       }
     } catch (error) {
       console.error('Error adding user:', error);

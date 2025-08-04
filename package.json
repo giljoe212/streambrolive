@@ -23,7 +23,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
-    "@types/react": "^18.3.5",
+    "@types/axios": "^0.9.36",
+    "@types/node": "^24.1.0",
+    "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.0",
     "@types/react-reconciler": "^0.32.0",
     "@vitejs/plugin-react": "^4.3.1",

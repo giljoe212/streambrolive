@@ -1,7 +1,8 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { PageHeader } from '../Layout/PageHeader';
 import { VideoPlayer } from './VideoPlayer';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_URL } from '../../apiConfig';
 import { useStream } from '../../contexts/StreamContext';
 import { 
   Play, 
@@ -14,9 +15,14 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+interface UploadResponse {
+  success: boolean;
+  data?: any; // You can define a more specific type for data if you know its structure
+}
 
 
-export const VideoGallery: React.FC = () => {
+
+export const VideoGallery = () => {
   const { user } = useAuth();
   const { videos, deleteVideo, isLoading, refreshData } = useStream();
   const [isUploading, setIsUploading] = useState(false);
@@ -69,11 +75,11 @@ export const VideoGallery: React.FC = () => {
       setUploadProgress(0);
       
       // Upload video
-      const response = await axios.post('http://localhost:3001/api/videos', formData, {
+            const config: any = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        onUploadProgress: (progressEvent) => {
+        onUploadProgress: (progressEvent: any) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
           setUploadProgress(percentCompleted);
           
@@ -82,7 +88,9 @@ export const VideoGallery: React.FC = () => {
             toast.loading(`Mengupload video... ${percentCompleted}%`, { id: toastId });
           }
         },
-      });
+      };
+
+      const response = await axios.post<UploadResponse>(`${API_URL}/api/videos`, formData, config);
 
       if (response.data.success) {
         // Tampilkan notifikasi sukses
@@ -92,12 +100,12 @@ export const VideoGallery: React.FC = () => {
         await refreshData();
         
         // Tunggu sebentar untuk memastikan data sudah terupdate
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise<void>(resolve => setTimeout(resolve, 1000));
         
         // Refresh data sekali lagi untuk memastikan thumbnail sudah digenerate
         await refreshData();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gagal mengupload video:', error);
       toast.error('Gagal mengupload video. Silakan coba lagi.', { id: toastId });
     } finally {
@@ -222,10 +230,10 @@ export const VideoGallery: React.FC = () => {
               <div className="relative aspect-video bg-gray-900">
                 {video.thumbnail ? (
                   <img 
-                    src={`http://localhost:3001/${video.thumbnail}`} 
+                    src={`${API_URL}/${video.thumbnail}`} 
                     alt={video.title}
                     className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/160x90/2d3748/9ca3af?text=No+Thumb'; }}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => { (e.currentTarget as HTMLImageElement).src = 'https://placehold.co/160x90/2d3748/9ca3af?text=No+Thumb'; }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-800">
@@ -244,7 +252,7 @@ export const VideoGallery: React.FC = () => {
                 <button 
                   onClick={() => {
                     if (video.filepath) {
-                      setPlayingVideoUrl(`http://localhost:3001/${video.filepath.replace(/\\/g, '/')}`)
+                      setPlayingVideoUrl(`${API_URL}/${video.filepath.replace(/\\/g, '/')}`)
                     }
                   }}
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-40"

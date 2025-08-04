@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import { API_URL } from '../apiConfig';
 import { Video, Stream, StreamHistory, SystemStats } from '../types';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
 
 interface StreamContextType {
   isLoading: boolean;
@@ -28,7 +35,11 @@ interface StreamContextType {
 
 const StreamContext = createContext<StreamContextType | undefined>(undefined);
 
-export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface StreamProviderProps {
+  children: ReactNode;
+}
+
+export const StreamProvider = ({ children }: StreamProviderProps) => {
   const { user } = useAuth();
   const [streams, setStreams] = useState<Stream[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -45,7 +56,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const fetchStreams = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const response = await axios.get(`http://localhost:3001/api/streams/user/${user.id}`);
+      const response = await axios.get<ApiResponse<Stream[]>>(`${API_URL}/api/streams/user/${user.id}`);
       if (response.data.success) {
         setStreams(response.data.data || []);
       }
@@ -58,7 +69,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const fetchVideos = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const response = await axios.get(`http://localhost:3001/api/videos/user/${user.id}`);
+      const response = await axios.get<ApiResponse<Video[]>>(`${API_URL}/api/videos/user/${user.id}`);
       if (response.data.success) {
         setVideos(response.data.data || []);
       }
@@ -95,9 +106,9 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const fetchSystemStats = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/system/stats');
+      const response = await axios.get<ApiResponse<SystemStats>>(`${API_URL}/api/system/stats`);
       if (response.data.success) {
-        setSystemStats(prevStats => ({
+        setSystemStats((prevStats: SystemStats) => ({
           ...prevStats,
           ...response.data.data,
         }));
@@ -121,7 +132,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const createStream = useCallback(async (streamData: Omit<Stream, 'id' | 'createdAt' | 'lastRun' | 'nextRun' | 'status' | 'userId'>) => {
     if (!user?.id) return;
     try {
-      await axios.post('http://localhost:3001/api/streams', { ...streamData, userId: user.id });
+      await axios.post<ApiResponse<Stream>>(`${API_URL}/api/streams`, { ...streamData, userId: user.id });
       refreshData();
     } catch (error) {
       console.error('Error creating stream:', error);
@@ -130,7 +141,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const updateStream = useCallback(async (id: string | number, updates: Partial<Stream>) => {
     try {
-      await axios.put(`http://localhost:3001/api/streams/${id}`, updates);
+      await axios.put<ApiResponse<Stream>>(`${API_URL}/api/streams/${id}`, updates);
       refreshData();
     } catch (error) {
       console.error(`Error updating stream ${id}:`, error);
@@ -139,7 +150,7 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const deleteStream = useCallback(async (id: string | number) => {
     try {
-      await axios.delete(`http://localhost:3001/api/streams/${id}`);
+      await axios.delete<ApiResponse<{}>>(`${API_URL}/api/streams/${id}`);
       refreshData();
     } catch (error) {
       console.error(`Error deleting stream ${id}:`, error);
@@ -148,10 +159,10 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const startStream = useCallback(async (id: string | number): Promise<{ success: boolean; data?: any; error?: string }> => {
     try {
-      const response = await axios.post(`http://localhost:3001/api/streams/${id}/start`);
+      const response = await axios.post<ApiResponse<any>>(`${API_URL}/api/streams/${id}/start`);
       console.log('Start stream response:', response.data);
       await refreshData();
-      return { success: true, data: response.data };
+      return response.data;
     } catch (err: any) {
       console.error('Error starting stream:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Failed to start stream';
@@ -161,16 +172,16 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const stopStream = useCallback(async (id: string | number) => {
     try {
-      await axios.post(`http://localhost:3001/api/streams/${id}/stop`);
+      await axios.post<ApiResponse<{}>>(`${API_URL}/api/streams/${id}/stop`);
       refreshData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error stopping stream:', err);
     }
   }, [refreshData]);
 
   const deleteVideo = useCallback(async (id: string) => {
     try {
-      await axios.delete(`http://localhost:3001/api/videos/${id}`);
+      await axios.delete<ApiResponse<{}>>(`${API_URL}/api/videos/${id}`);
       refreshData();
     } catch (error) {
       console.error('Error deleting video:', error);

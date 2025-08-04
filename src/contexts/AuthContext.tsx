@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { API_URL } from '../apiConfig';
 import { User } from '../types';
 
 interface PasswordChangePayload {
@@ -10,6 +11,12 @@ interface PasswordChangePayload {
 interface SettingsPayload {
   defaultRtmpUrl?: string;
   autoLoop?: boolean;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
 }
 
 interface AuthContextType {
@@ -32,7 +39,11 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUserSettings = async (settings: SettingsPayload) => {
     if (!user) throw new Error("User not authenticated");
     try {
-      const response = await axios.put(`http://localhost:3001/api/auth/settings/${user.id}`, { settings });
+      const response = await axios.put<ApiResponse<User>>(`${API_URL}/api/auth/settings/${user.id}`, { settings });
       if (response.data.success) {
         setUser(response.data.data); // Update user state with the latest data from server
       } else {
@@ -63,7 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const changePassword = async (payload: PasswordChangePayload): Promise<boolean> => {
     if (!user) throw new Error("User not authenticated");
     try {
-      const response = await axios.put(`http://localhost:3001/api/auth/change-password/${user.id}`, payload);
+      const response = await axios.put<ApiResponse<{}>>(`${API_URL}/api/auth/change-password/${user.id}`, payload);
       if (response.data.success) {
         return true;
       }
@@ -78,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/login', { username, password });
+      const response = await axios.post<ApiResponse<User>>(`${API_URL}/api/auth/login`, { username, password });
       
       if (response.data && response.data.success) {
         const loggedInUser = response.data.data;
@@ -109,13 +120,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (username: string, email: string, password: string): Promise<boolean> => {
     try {
-      const response = await axios.post('http://localhost:3001/api/auth/register', { username, email, password });
+      const response = await axios.post<ApiResponse<{}>>(`${API_URL}/api/auth/register`, { username, email, password });
       if (response.data.success) {
         // Automatically log in the user after successful registration
         return await login(username, password);
       }
       return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration failed:', error);
       return false;
     }

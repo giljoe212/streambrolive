@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Video } from '../../types';
 import { ChevronDown, Check } from 'lucide-react';
+import { API_URL } from '../../apiConfig';
 
 interface VideoSelectProps {
   videos: Video[];
@@ -78,7 +79,7 @@ export const VideoSelect: React.FC<VideoSelectProps> = ({
                 >
                   <div className="relative flex-shrink-0 w-12 h-12 bg-gray-700 rounded overflow-hidden">
                     <img
-                      src={video.thumbnail ? `http://localhost:3001/${video.thumbnail}` : 'https://placehold.co/80x45/2d3748/9ca3af?text=No+Thumb'}
+                      src={video.thumbnail ? `${API_URL}/${video.thumbnail}` : 'https://placehold.co/80x45/2d3748/9ca3af?text=No+Thumb'}
                       alt={video.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {

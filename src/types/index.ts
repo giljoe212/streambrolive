@@ -51,12 +51,13 @@ export interface Stream {
   description: string;
   rtmpUrl: string;
   streamKey: string;
-  videos: string[];
+  videos: Video[];
   loop: boolean;
   status: 'idle' | 'streaming' | 'error' | 'scheduled' | 'waiting' | 'live' | 'running' | 'ended' | 'completed';
   createdAt: string;
   lastRun?: string;
   nextRun?: string;
+  isLive?: boolean;
 
   // Kolom baru untuk penjadwalan UTC sederhana
   is_scheduled: boolean;
