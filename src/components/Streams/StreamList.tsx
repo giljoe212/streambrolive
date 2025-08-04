@@ -3,7 +3,6 @@ import { PageHeader } from '../Layout/PageHeader';
 import { useStream } from '../../contexts/StreamContext';
 import { 
   Play, 
-  Pause, 
   Trash2,
   Youtube,
   Plus,
@@ -13,21 +12,21 @@ import {
   Database,
   Radio,
   Edit as Edit3,
-  Clock,
-  Square,
-  ListVideo,
   AlertTriangle,
   CheckCircle,
   Calendar,
   Hourglass,
-  Zap
+  Zap,
+  Square,
+  Clock,
+  ListVideo
 } from 'lucide-react';
 import { StreamForm } from './StreamForm';
 import { VideoPlayer } from '../Videos/VideoPlayer';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_URL } from '../../apiConfig';
 import axios from 'axios';
-import { Stream, Video, StreamSchedule } from '../../types';
+import { Stream } from '../../types';
 
 interface YouTubeAuthResponse {
   success: boolean;
@@ -209,8 +208,10 @@ const StreamList = () => {
     if (streamList.length === 0) return null;
 
     return (
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-4">{title} <span className="text-gray-500 font-normal text-xl">({streamList.length})</span></h2>
+      <div key={title}>
+        <h2 className="text-2xl font-bold text-white mb-4">
+          {title} <span className="text-gray-500 font-normal text-xl">({streamList.length})</span>
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {streamList.map(stream => {
             const totalDuration = stream.videos.reduce((acc, video) => acc + video.duration, 0);
@@ -298,7 +299,7 @@ const StreamList = () => {
       {isFormOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-900 rounded-xl w-full max-w-4xl border border-gray-800 overflow-hidden">
-             <StreamForm onClose={() => { setIsFormOpen(false); setEditingStreamId(null); }} streamId={editingStreamId} />
+            <StreamForm onClose={() => { setIsFormOpen(false); setEditingStreamId(null); }} streamId={editingStreamId} />
           </div>
         </div>
       )}
@@ -338,73 +339,18 @@ const StreamList = () => {
       ) : (
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 text-center">
           <div className="max-w-md mx-auto">
-            <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4"><Radio className="w-10 h-10 text-gray-600" /></div>
+            <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Radio className="w-10 h-10 text-gray-600" />
+            </div>
             <h3 className="text-xl font-semibold text-white">Belum Ada Stream Dibuat</h3>
             <p className="text-gray-400 mt-2 mb-6">Klik tombol di atas untuk membuat stream pertama Anda.</p>
-
           </div>
         </div>
       )}
 
       {playingVideoUrl && <VideoPlayer videoUrl={playingVideoUrl} onClose={() => setPlayingVideoUrl(null)} />}
     </div>
-
-                <div className="flex-grow min-w-0 w-full flex flex-col md:flex-row md:items-center md:space-x-6"> 
-                  {/* Info */}
-                  <div className="flex-grow min-w-0">
-                  <h3 className="font-bold text-white text-lg truncate">{stream.title}</h3>
-                  <p className="text-sm text-gray-400 truncate">{getScheduleSummary(stream)}</p>
-                  {stream.schedule && <ScheduleSlots schedule={stream.schedule} />}
-                  </div>
-
-                  {/* Status & Actions Wrapper */}
-                  <div className="w-full md:w-auto flex items-center justify-between mt-4 md:mt-0 pt-4 md:pt-0 border-t border-gray-800 md:border-none md:space-x-6">
-                    {/* Status */}
-                    <div className="flex-shrink-0 md:w-28 text-left md:text-center">
-                      <span className={statusInfo.className}>{statusInfo.text}</span>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2">
-                  {stream.status === 'live' || stream.status === 'streaming' || stream.status === 'running' ? (
-                    <button 
-                      onClick={() => stopStream(stream.id)} 
-                      className="bg-red-600/20 text-red-400 p-2 rounded-lg font-semibold hover:bg-red-600/40 transition-all flex items-center justify-center"
-                      title="Stop Stream"
-                    >
-                      <Pause className="w-5 h-5" />
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={() => startStream(stream.id)} 
-                      className="bg-green-600/20 text-green-400 p-2 rounded-lg font-semibold hover:bg-green-600/40 transition-all flex items-center justify-center"
-                      title="Start Stream"
-                    >
-                      <Play className="w-5 h-5" />
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => { setEditingStreamId(stream.id); setIsFormOpen(true); }} 
-                    className="bg-gray-700/50 text-gray-300 p-2 rounded-lg hover:bg-gray-700 transition-all"
-                    title="Edit Stream"
-                  >
-                    <Edit3 className="w-5 h-5" />
-                  </button>
-                      <button 
-                        onClick={() => deleteStream(stream.id)} 
-                        className="bg-gray-700/50 text-gray-300 p-2 rounded-lg hover:bg-gray-700 transition-all"
-                        title="Hapus Stream"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
+  );
 };
+
+export default StreamList;
